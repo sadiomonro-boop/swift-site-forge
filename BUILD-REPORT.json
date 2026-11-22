@@ -10,7 +10,7 @@
     "main.ts run twice: answers.json byte-identical",
     "repo total 42,861 bytes (<= 4 MiB cap); LICENSE line 1 is SPDX-License-Identifier: MIT; README carries the 3 live make.fun badges; .makefun/owner.json wallet 3E5ttwM9Ges977k7Y2L443bdZ5VULPKTmgBEkVGgFCyM"
   ],
-  "commit": "113a718ba3f676133b2dcd877c30b5dfa21ae62b (first commit: code + README + LICENSE + owner.json; this BUILD-REPORT.json update is committed on top of it)",
+  "commit": "d04aa02a40074a4190e33fdc363d50e0e28c91bb (fix commit: 7 critic SHOULD-FIX + resolvePath hardening; this BUILD-REPORT.json update is committed on top of it)",
   "competition": "site-generator-speed-01-run-20261122",
   "cutoff_gap": "run() ~196 ms on this VM vs house baseline ~708 ms (~3.5x faster); dev-board numbers are on a slower machine and cannot be compared literally",
   "dev_rank": "not on the dev board (entry not submitted yet); dev board at 23 Nov ~03:12 WIB: #1 700,000 us, #10 prize cutoff 1,770,000 us, #14 3,070,000 us (provisional, slower machine, 10 ms tick)",
@@ -39,7 +39,7 @@
   ],
   "per_trial_latency_ms": "~65 (run() total ~196 ms for 3 cases, i.e. ~65 ms per case on this VM)",
   "red_team_items": [
-    "Critic round 1 (23 Nov 2026): 7 SHOULD-FIX, all 7 fixed + 1 hardening (resolvePath descent now requires typeof v === 'object'). Re-verified after fixing: grade-local passed=1, cases_passed 3/3; 9/9 fresh generator-drawn cases byte-identical (3 new seeds); 14/14 targeted differential cases vs the reference oracle pass (the critic's original /tmp/difftest.mjs suite no longer exists, so a replacement 14-case suite covering all 10 divergences was written and run); main.ts run twice byte-identical; run() CPU median ~197 ms over the 3 practice cases (A/B vs pre-fix ~213 ms on the same machine — no slowdown from the fixes). Round 2 pending.",
+    "Critic round 1 (23 Nov 2026): 7 SHOULD-FIX, all 7 fixed + 1 hardening (resolvePath descent now requires typeof v === 'object'). Re-verified after fixing: grade-local passed=1, cases_passed 3/3; 9/9 fresh generator-drawn cases byte-identical (3 new seeds); 14/14 targeted differential cases vs the reference oracle pass (the critic's original /tmp/difftest.mjs suite no longer exists, so a replacement 14-case suite covering all 10 divergences was written and run); main.ts run twice byte-identical; run() CPU median ~197 ms over the 3 practice cases (A/B vs pre-fix ~213 ms on the same machine \u2014 no slowdown from the fixes). Round 2 pending.",
     "Scored set is drawn AFTER entries close from drand round 34249212 \u2014 no overfitting to practice cases; mitigated by differential-testing 6 fresh generator-drawn cases (all PASS).",
     "Server harness runs Node v26.13.1 vs this VM's v24.22.1, so result_sha256 cannot equal the server's (grade-local note); behaviour is version-independent plain JS, and grade-local passed 3/3 here.",
     "Transcript/authorship gate runs at submission (makefun check) \u2014 coordinator to run it over the builder transcripts; code authorship itself is 100% in-session.",
