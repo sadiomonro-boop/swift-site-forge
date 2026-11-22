@@ -105,7 +105,7 @@ function parseQuoted(value, key) {
     if (c === '"') return { error: 'key "' + key + '": a quoted string holds a stray quote' };
     if (c === '\\') {
       const d = value[i + 1];
-      if (d !== '"' && d !== '\\') {
+      if (d !== '"' && d !== '\\' || i + 1 === value.length - 1) {
         return { error: 'key "' + key + '": a quoted string holds an escape other than \\" or \\\\' };
       }
       out += d;
@@ -179,7 +179,7 @@ function parseFrontMatter(content) {
       }
       const inner = value.slice(1, -1);
       const tags = [];
-      if (inner !== '') {
+      if (inner.trim() !== '') {
         for (const part of inner.split(',')) {
           const t = part.trim();
           if (t === '' || t.indexOf('"') !== -1 || t.indexOf('[') !== -1 || t.indexOf(']') !== -1) {
@@ -304,7 +304,7 @@ function parseTemplate(src) {
     }
     if (tok.k === 'var' || tok.k === 'raw') {
       const segs = parsePath(tok.inner);
-      if (!segs) return { error: '"' + tok.inner + '" is not a path' };
+      if (!segs) return { error: JSON.stringify(tok.inner) + ' is not a path' };
       top.body.push({ k: tok.k, segs });
       continue;
     }
@@ -326,7 +326,7 @@ function parseTemplate(src) {
       continue;
     }
     let m;
-    if ((m = /^for\s+([A-Za-z_][A-Za-z0-9_]*)\s+in\s+(.+)$/.exec(inner))) {
+    if ((m = /^for ([A-Za-z_][A-Za-z0-9_]*) in (\S+)$/.exec(inner))) {
       const segs = parsePath(m[2]);
       if (!segs) return { error: '{% ' + inner + ' %} is not a tag' };
       const node = { k: 'for', name: m[1], segs, body: [] };
@@ -334,7 +334,7 @@ function parseTemplate(src) {
       stack.push({ kind: 'for', node, body: node.body });
       continue;
     }
-    if ((m = /^if\s+(not\s+)?(.+)$/.exec(inner))) {
+    if ((m = /^if (not )?(\S+)$/.exec(inner))) {
       const segs = parsePath(m[2]);
       if (!segs) return { error: '{% ' + inner + ' %} is not a tag' };
       const node = { k: 'if', segs, neg: !!m[1], then: [], else: null };
@@ -342,7 +342,7 @@ function parseTemplate(src) {
       stack.push({ kind: 'if', node, body: node.then });
       continue;
     }
-    if ((m = /^include\s+"([^"]*)"$/.exec(inner))) {
+    if ((m = /^include "([a-z0-9-]+)"$/.exec(inner))) {
       top.body.push({ k: 'include', name: m[1] });
       continue;
     }
@@ -384,7 +384,7 @@ function resolvePath(segs, root, frames) {
   for (let s = 1; s < segs.length; s++) {
     if (v === null || v === undefined) return undefined;
     const t = typeof v;
-    if ((t === 'object' || t === 'function' || t === 'string') &&
+    if (t === 'object' &&
       Object.prototype.hasOwnProperty.call(v, segs[s])) {
       v = v[segs[s]];
     } else {
@@ -469,7 +469,15 @@ function resolveLink(target, ctx) {
   for (const seg of pathPart.split('/')) {
     if (seg === '' || seg === '.') continue;
     if (seg === '..') {
-      if (parts.length > 0) parts.pop();
+      if (parts.length === 0) {
+        const key = ctx.src + '\n' + target;
+        if (!ctx.brokenKeys.has(key)) {
+          ctx.brokenKeys.add(key);
+          ctx.broken.push(target);
+        }
+        return target;
+      }
+      parts.pop();
       continue;
     }
     parts.push(seg);
@@ -681,6 +689,7 @@ function listInfo(line) {
       num = num * 10 + (c - 48);
       i++;
     }
+    if (i > 9) return null;
     if (line.charCodeAt(i) === 46 && line.charCodeAt(i + 1) === 32) {
       return { ordered: true, num, text: trimSpacesTabs(line.slice(i + 2)) };
     }
